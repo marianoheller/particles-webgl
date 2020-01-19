@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <link href="https://fonts.googleapis.com/css?family=Open+Sans&display=swap" rel="stylesheet">
+  <title>Particles</title>
+  <style>
+    html,
+    body {
+      margin: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+    }
+  </style>
+</head>
+<!-- "avh4/elm-color": "1.0.0",
+            "elm/browser": "1.0.2",
+            "elm/core": "1.0.4",
+            "elm/html": "1.0.0",
+            "elm/random": "1.0.0",
+            "elm/time": "1.0.0",
+            "elm-explorations/linear-algebra": "1.0.3",
+            "joakin/elm-canvas": "4.0.1",
+            "mpizenberg/elm-pointer-events": "4.0.1" -->
+<body>
+  <main></main>
+  <script src="assets/js/elm-canvas.js"></script>
+  <script src="./assets/js/particles.js"></script>
+  <script>
+    Elm.Main.init({
+      node: document.querySelector('main'),
+      flags: {
+        windowWidth: window.innerWidth,
+        windowHeight: window.innerHeight
+      }
+    })
+  </script>
+</body>
+
+</html>
