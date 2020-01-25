@@ -4440,6 +4440,67 @@ function _Time_getZoneName()
 }
 
 
+// eslint-disable-next-line no-unused-vars
+var _Texture_load = F6(function (magnify, mininify, horizontalWrap, verticalWrap, flipY, url) {
+  var isMipmap = mininify !== 9728 && mininify !== 9729;
+  return _Scheduler_binding(function (callback) {
+    var img = new Image();
+    function createTexture(gl) {
+      var texture = gl.createTexture();
+      gl.bindTexture(gl.TEXTURE_2D, texture);
+      gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, flipY);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, magnify);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, mininify);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, horizontalWrap);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, verticalWrap);
+      if (isMipmap) {
+        gl.generateMipmap(gl.TEXTURE_2D);
+      }
+      gl.bindTexture(gl.TEXTURE_2D, null);
+      return texture;
+    }
+    img.onload = function () {
+      var width = img.width;
+      var height = img.height;
+      var widthPowerOfTwo = (width & (width - 1)) === 0;
+      var heightPowerOfTwo = (height & (height - 1)) === 0;
+      var isSizeValid = (widthPowerOfTwo && heightPowerOfTwo) || (
+        !isMipmap
+        && horizontalWrap === 33071 // clamp to edge
+        && verticalWrap === 33071
+      );
+      if (isSizeValid) {
+        callback(_Scheduler_succeed({
+          $: 0,
+          createTexture: createTexture,
+          a: width,
+          b: height
+        }));
+      } else {
+        callback(_Scheduler_fail(A2(
+          $elm_explorations$webgl$WebGL$Texture$SizeError,
+          width,
+          height
+        )));
+      }
+    };
+    img.onerror = function () {
+      callback(_Scheduler_fail($elm_explorations$webgl$WebGL$Texture$LoadError));
+    };
+    if (url.slice(0, 5) !== 'data:') {
+      img.crossOrigin = 'Anonymous';
+    }
+    img.src = url;
+  });
+});
+
+// eslint-disable-next-line no-unused-vars
+var _Texture_size = function (texture) {
+  return _Utils_Tuple2(texture.a, texture.b);
+};
+
+
 /*
  * Copyright (c) 2010 Mozilla Corporation
  * Copyright (c) 2010 Vladimir Vukicevic
@@ -6889,9 +6950,39 @@ var $elm$json$Json$Decode$float = _Json_decodeFloat;
 var $author$project$Main$GotViewport = function (a) {
 	return {$: 'GotViewport', a: a};
 };
+var $author$project$Main$LogoLoaded = function (a) {
+	return {$: 'LogoLoaded', a: a};
+};
+var $author$project$Main$MapLoaded = function (a) {
+	return {$: 'MapLoaded', a: a};
+};
 var $author$project$Main$Populate = function (a) {
 	return {$: 'Populate', a: a};
 };
+var $elm$core$Basics$composeL = F3(
+	function (g, f, x) {
+		return g(
+			f(x));
+	});
+var $elm$core$Task$onError = _Scheduler_onError;
+var $elm$core$Task$attempt = F2(
+	function (resultToMessage, task) {
+		return $elm$core$Task$command(
+			$elm$core$Task$Perform(
+				A2(
+					$elm$core$Task$onError,
+					A2(
+						$elm$core$Basics$composeL,
+						A2($elm$core$Basics$composeL, $elm$core$Task$succeed, resultToMessage),
+						$elm$core$Result$Err),
+					A2(
+						$elm$core$Task$andThen,
+						A2(
+							$elm$core$Basics$composeL,
+							A2($elm$core$Basics$composeL, $elm$core$Task$succeed, resultToMessage),
+							$elm$core$Result$Ok),
+						task))));
+	});
 var $elm$core$Platform$Cmd$batch = _Platform_batch;
 var $elm$random$Random$Generate = function (a) {
 	return {$: 'Generate', a: a};
@@ -7031,6 +7122,40 @@ var $elm$random$Random$list = F2(
 				return A4($elm$random$Random$listHelp, _List_Nil, n, gen, seed);
 			});
 	});
+var $elm_explorations$webgl$WebGL$Texture$LoadError = {$: 'LoadError'};
+var $elm_explorations$webgl$WebGL$Texture$SizeError = F2(
+	function (a, b) {
+		return {$: 'SizeError', a: a, b: b};
+	});
+var $elm_explorations$webgl$WebGL$Texture$loadWith = F2(
+	function (_v0, url) {
+		var magnify = _v0.magnify;
+		var minify = _v0.minify;
+		var horizontalWrap = _v0.horizontalWrap;
+		var verticalWrap = _v0.verticalWrap;
+		var flipY = _v0.flipY;
+		var expand = F4(
+			function (_v1, _v2, _v3, _v4) {
+				var mag = _v1.a;
+				var min = _v2.a;
+				var hor = _v3.a;
+				var vert = _v4.a;
+				return A6(_Texture_load, mag, min, hor, vert, flipY, url);
+			});
+		return A4(expand, magnify, minify, horizontalWrap, verticalWrap);
+	});
+var $author$project$Main$logoUrl = 'assets/img/logo.png';
+var $author$project$Main$mapUrl = 'assets/img/map.png';
+var $elm_explorations$webgl$WebGL$Texture$Wrap = function (a) {
+	return {$: 'Wrap', a: a};
+};
+var $elm_explorations$webgl$WebGL$Texture$clampToEdge = $elm_explorations$webgl$WebGL$Texture$Wrap(33071);
+var $elm_explorations$webgl$WebGL$Texture$Resize = function (a) {
+	return {$: 'Resize', a: a};
+};
+var $elm_explorations$webgl$WebGL$Texture$linear = $elm_explorations$webgl$WebGL$Texture$Resize(9729);
+var $elm_explorations$webgl$WebGL$Texture$nearest = $elm_explorations$webgl$WebGL$Texture$Resize(9728);
+var $elm_explorations$webgl$WebGL$Texture$nonPowerOfTwoOptions = {flipY: true, horizontalWrap: $elm_explorations$webgl$WebGL$Texture$clampToEdge, magnify: $elm_explorations$webgl$WebGL$Texture$linear, minify: $elm_explorations$webgl$WebGL$Texture$nearest, verticalWrap: $elm_explorations$webgl$WebGL$Texture$clampToEdge};
 var $author$project$Main$qtyParticlesMin = 50;
 var $elm$core$Basics$negate = function (n) {
 	return -n;
@@ -7167,7 +7292,15 @@ var $author$project$Main$init = function (flags) {
 					A2(
 						$elm$random$Random$list,
 						$author$project$Main$qtyParticlesMin,
-						A2($author$project$Main$tupleInitGenerator, width, height)))
+						A2($author$project$Main$tupleInitGenerator, width, height))),
+					A2(
+					$elm$core$Task$attempt,
+					$author$project$Main$LogoLoaded,
+					A2($elm_explorations$webgl$WebGL$Texture$loadWith, $elm_explorations$webgl$WebGL$Texture$nonPowerOfTwoOptions, $author$project$Main$logoUrl)),
+					A2(
+					$elm$core$Task$attempt,
+					$author$project$Main$MapLoaded,
+					A2($elm_explorations$webgl$WebGL$Texture$loadWith, $elm_explorations$webgl$WebGL$Texture$nonPowerOfTwoOptions, $author$project$Main$mapUrl))
 				])));
 };
 var $author$project$Main$Frame = function (a) {
@@ -7281,11 +7414,6 @@ var $elm$browser$Browser$AnimationManager$onSelfMsg = F3(
 var $elm$browser$Browser$AnimationManager$Time = function (a) {
 	return {$: 'Time', a: a};
 };
-var $elm$core$Basics$composeL = F3(
-	function (g, f, x) {
-		return g(
-			f(x));
-	});
 var $elm$browser$Browser$AnimationManager$subMap = F2(
 	function (func, sub) {
 		if (sub.$ === 'Time') {
@@ -7990,91 +8118,47 @@ var $author$project$Main$update = F2(
 							3,
 							A2($author$project$Main$tupleGeneratorAt, x, y))));
 			case 'LogoLoaded':
-				var maybeLogo = msg.a;
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{logo: maybeLogo}),
-					$elm$core$Platform$Cmd$none);
+				if (msg.a.$ === 'Ok') {
+					var logo = msg.a.a;
+					return _Utils_Tuple2(
+						_Utils_update(
+							model,
+							{
+								logo: $elm$core$Maybe$Just(logo)
+							}),
+						$elm$core$Platform$Cmd$none);
+				} else {
+					return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+				}
 			default:
-				var maybeMap = msg.a;
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{map: maybeMap}),
-					$elm$core$Platform$Cmd$none);
+				if (msg.a.$ === 'Ok') {
+					var map = msg.a.a;
+					return _Utils_Tuple2(
+						_Utils_update(
+							model,
+							{
+								map: $elm$core$Maybe$Just(map)
+							}),
+						$elm$core$Platform$Cmd$none);
+				} else {
+					return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+				}
 		}
 	});
 var $author$project$Main$CanvasClick = function (a) {
 	return {$: 'CanvasClick', a: a};
 };
+var $elm_explorations$webgl$WebGL$Internal$Alpha = function (a) {
+	return {$: 'Alpha', a: a};
+};
+var $elm_explorations$webgl$WebGL$alpha = $elm_explorations$webgl$WebGL$Internal$Alpha;
+var $elm_explorations$webgl$WebGL$Internal$Antialias = {$: 'Antialias'};
+var $elm_explorations$webgl$WebGL$antialias = $elm_explorations$webgl$WebGL$Internal$Antialias;
 var $elm_explorations$webgl$WebGL$Internal$ClearColor = F4(
 	function (a, b, c, d) {
 		return {$: 'ClearColor', a: a, b: b, c: c, d: d};
 	});
 var $elm_explorations$webgl$WebGL$clearColor = $elm_explorations$webgl$WebGL$Internal$ClearColor;
-var $elm_explorations$webgl$WebGL$Internal$Blend = function (a) {
-	return function (b) {
-		return function (c) {
-			return function (d) {
-				return function (e) {
-					return function (f) {
-						return function (g) {
-							return function (h) {
-								return function (i) {
-									return function (j) {
-										return {$: 'Blend', a: a, b: b, c: c, d: d, e: e, f: f, g: g, h: h, i: i, j: j};
-									};
-								};
-							};
-						};
-					};
-				};
-			};
-		};
-	};
-};
-var $elm_explorations$webgl$WebGL$Settings$Blend$custom = function (_v0) {
-	var r = _v0.r;
-	var g = _v0.g;
-	var b = _v0.b;
-	var a = _v0.a;
-	var color = _v0.color;
-	var alpha = _v0.alpha;
-	var expand = F2(
-		function (_v1, _v2) {
-			var eq1 = _v1.a;
-			var f11 = _v1.b;
-			var f12 = _v1.c;
-			var eq2 = _v2.a;
-			var f21 = _v2.b;
-			var f22 = _v2.c;
-			return $elm_explorations$webgl$WebGL$Internal$Blend(eq1)(f11)(f12)(eq2)(f21)(f22)(r)(g)(b)(a);
-		});
-	return A2(expand, color, alpha);
-};
-var $elm_explorations$webgl$WebGL$Settings$Blend$Blender = F3(
-	function (a, b, c) {
-		return {$: 'Blender', a: a, b: b, c: c};
-	});
-var $elm_explorations$webgl$WebGL$Settings$Blend$customAdd = F2(
-	function (_v0, _v1) {
-		var factor1 = _v0.a;
-		var factor2 = _v1.a;
-		return A3($elm_explorations$webgl$WebGL$Settings$Blend$Blender, 32774, factor1, factor2);
-	});
-var $elm_explorations$webgl$WebGL$Settings$Blend$add = F2(
-	function (factor1, factor2) {
-		return $elm_explorations$webgl$WebGL$Settings$Blend$custom(
-			{
-				a: 0,
-				alpha: A2($elm_explorations$webgl$WebGL$Settings$Blend$customAdd, factor1, factor2),
-				b: 0,
-				color: A2($elm_explorations$webgl$WebGL$Settings$Blend$customAdd, factor1, factor2),
-				g: 0,
-				r: 0
-			});
-	});
 var $author$project$Main$Attribute = F2(
 	function (color, position) {
 		return {color: color, position: position};
@@ -8115,6 +8199,7 @@ var $author$project$Main$connectionMesh = function () {
 			]));
 }();
 var $elm$core$Basics$atan2 = _Basics_atan2;
+var $elm_explorations$linear_algebra$Math$Vector2$distance = _MJS_v2distance;
 var $elm_explorations$linear_algebra$Math$Vector2$length = _MJS_v2length;
 var $elm_explorations$linear_algebra$Math$Matrix4$makeLookAt = _MJS_m4x4makeLookAt;
 var $elm_explorations$linear_algebra$Math$Matrix4$makeOrtho2D = _MJS_m4x4makeOrtho2D;
@@ -8137,7 +8222,7 @@ var $author$project$Main$connectionUniforms = F2(
 				A3($elm_explorations$linear_algebra$Math$Vector3$vec3, 0, 0, 0.99),
 				A3($elm_explorations$linear_algebra$Math$Vector3$vec3, 0, 0, 0),
 				A3($elm_explorations$linear_algebra$Math$Vector3$vec3, 0, 1, 0)),
-			intensity: ($author$project$Main$minDistance - $elm_explorations$linear_algebra$Math$Vector2$length(diff)) / $author$project$Main$minDistance,
+			intensity: ($author$project$Main$minDistance - A2($elm_explorations$linear_algebra$Math$Vector2$distance, from, to)) / $author$project$Main$minDistance,
 			model: A3(
 				$elm_explorations$linear_algebra$Math$Matrix4$makeTranslate3,
 				$elm_explorations$linear_algebra$Math$Vector2$getX(from),
@@ -8155,7 +8240,18 @@ var $author$project$Main$connectionUniforms = F2(
 				0)
 		};
 	});
-var $elm_explorations$linear_algebra$Math$Vector2$distance = _MJS_v2distance;
+var $elm_explorations$webgl$WebGL$Internal$DepthTest = F4(
+	function (a, b, c, d) {
+		return {$: 'DepthTest', a: a, b: b, c: c, d: d};
+	});
+var $elm_explorations$webgl$WebGL$Settings$DepthTest$less = function (_v0) {
+	var write = _v0.write;
+	var near = _v0.near;
+	var far = _v0.far;
+	return A4($elm_explorations$webgl$WebGL$Internal$DepthTest, 513, write, near, far);
+};
+var $elm_explorations$webgl$WebGL$Settings$DepthTest$default = $elm_explorations$webgl$WebGL$Settings$DepthTest$less(
+	{far: 1, near: 0, write: true});
 var $elm_explorations$webgl$WebGL$Internal$disableSetting = F2(
 	function (cache, setting) {
 		switch (setting.$) {
@@ -8220,34 +8316,25 @@ var $elm_explorations$webgl$WebGL$Internal$enableSetting = F2(
 		}
 	});
 var $elm_explorations$webgl$WebGL$entityWith = _WebGL_entity;
+var $elm_explorations$webgl$WebGL$entity = $elm_explorations$webgl$WebGL$entityWith(
+	_List_fromArray(
+		[$elm_explorations$webgl$WebGL$Settings$DepthTest$default]));
 var $author$project$Main$fragmentShader = {
-	src: '\n        precision mediump float;\n\n        varying vec3 vcolor;\n        uniform float intensity;\n        \n        void main () {\n            gl_FragColor =  vec4(vcolor, 0);\n        }\n    ',
+	src: '\n        precision mediump float;\n\n        varying vec3 vcolor;\n        uniform float intensity;\n        \n        void main () {\n            gl_FragColor =  vec4(vcolor, intensity);\n        }\n    ',
 	attributes: {},
 	uniforms: {intensity: 'intensity'}
 };
-var $elm_explorations$webgl$WebGL$Settings$Blend$Factor = function (a) {
-	return {$: 'Factor', a: a};
-};
-var $elm_explorations$webgl$WebGL$Settings$Blend$one = $elm_explorations$webgl$WebGL$Settings$Blend$Factor(1);
-var $elm_explorations$webgl$WebGL$Internal$SampleAlphaToCoverage = {$: 'SampleAlphaToCoverage'};
-var $elm_explorations$webgl$WebGL$Settings$sampleAlphaToCoverage = $elm_explorations$webgl$WebGL$Internal$SampleAlphaToCoverage;
 var $author$project$Main$vertexShader = {
 	src: '\n        precision mediump float;\n\n        attribute vec3 position;\n        attribute vec3 color;\n\n        uniform mat4 projection;\n        uniform mat4 camera;\n        uniform mat4 model;\n        uniform mat4 scale;\n        uniform mat4 rotate;\n        uniform float intensity;\n\n        varying vec3 vcolor;\n\n        void main () {\n            gl_Position =  projection * camera * model * rotate * scale * vec4(position, 1.0);\n            vcolor = color;\n        }\n    ',
 	attributes: {color: 'color', position: 'position'},
 	uniforms: {camera: 'camera', intensity: 'intensity', model: 'model', projection: 'projection', rotate: 'rotate', scale: 'scale'}
 };
-var $elm_explorations$webgl$WebGL$Settings$Blend$zero = $elm_explorations$webgl$WebGL$Settings$Blend$Factor(0);
 var $author$project$Main$drawConnections = F2(
 	function (window, particles) {
 		var drawConnection = F2(
 			function (from, to) {
-				return A5(
-					$elm_explorations$webgl$WebGL$entityWith,
-					_List_fromArray(
-						[
-							A2($elm_explorations$webgl$WebGL$Settings$Blend$add, $elm_explorations$webgl$WebGL$Settings$Blend$one, $elm_explorations$webgl$WebGL$Settings$Blend$zero),
-							$elm_explorations$webgl$WebGL$Settings$sampleAlphaToCoverage
-						]),
+				return A4(
+					$elm_explorations$webgl$WebGL$entity,
 					$author$project$Main$vertexShader,
 					$author$project$Main$fragmentShader,
 					$author$project$Main$connectionMesh,
@@ -8279,21 +8366,6 @@ var $author$project$Main$drawConnections = F2(
 			});
 		return A3($elm$core$List$foldr, folder, _List_Nil, particles);
 	});
-var $elm_explorations$webgl$WebGL$Internal$DepthTest = F4(
-	function (a, b, c, d) {
-		return {$: 'DepthTest', a: a, b: b, c: c, d: d};
-	});
-var $elm_explorations$webgl$WebGL$Settings$DepthTest$less = function (_v0) {
-	var write = _v0.write;
-	var near = _v0.near;
-	var far = _v0.far;
-	return A4($elm_explorations$webgl$WebGL$Internal$DepthTest, 513, write, near, far);
-};
-var $elm_explorations$webgl$WebGL$Settings$DepthTest$default = $elm_explorations$webgl$WebGL$Settings$DepthTest$less(
-	{far: 1, near: 0, write: true});
-var $elm_explorations$webgl$WebGL$entity = $elm_explorations$webgl$WebGL$entityWith(
-	_List_fromArray(
-		[$elm_explorations$webgl$WebGL$Settings$DepthTest$default]));
 var $elm$core$Basics$cos = _Basics_cos;
 var $elm$core$Basics$pi = _Basics_pi;
 var $elm$core$Basics$sin = _Basics_sin;
@@ -8513,7 +8585,9 @@ var $author$project$Main$view = function (model) {
 		$elm_explorations$webgl$WebGL$toHtmlWith,
 		_List_fromArray(
 			[
-				A4($elm_explorations$webgl$WebGL$clearColor, 0.4, 0.4, 0.4, 1)
+				A4($elm_explorations$webgl$WebGL$clearColor, 0.4, 0.4, 0.4, 1),
+				$elm_explorations$webgl$WebGL$alpha(false),
+				$elm_explorations$webgl$WebGL$antialias
 			]),
 		_List_fromArray(
 			[
@@ -8528,11 +8602,11 @@ var $author$project$Main$view = function (model) {
 				$elm$core$Basics$round(height))
 			]),
 		_Utils_ap(
+			A2($author$project$Main$drawConnections, model.window, model.particles),
 			A2(
 				$elm$core$List$map,
 				$author$project$Main$drawParticle(model.window),
-				model.particles),
-			A2($author$project$Main$drawConnections, model.window, model.particles)));
+				model.particles)));
 };
 var $author$project$Main$main = $elm$browser$Browser$element(
 	{init: $author$project$Main$init, subscriptions: $author$project$Main$subscriptions, update: $author$project$Main$update, view: $author$project$Main$view});

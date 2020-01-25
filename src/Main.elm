@@ -3,7 +3,6 @@ module Main exposing (main)
 import Browser
 import Browser.Dom exposing (Viewport, getViewport)
 import Browser.Events exposing (onAnimationFrameDelta, onResize)
-import Color
 import Html exposing (Html)
 import Html.Attributes as Attrs
 import Html.Events.Extra.Mouse as Mouse
@@ -117,6 +116,8 @@ init flags =
         [ Task.perform GotViewport getViewport
         , Random.generate Populate <|
             Random.list qtyParticlesMin (tupleInitGenerator width height)
+        , Task.attempt LogoLoaded <| WebGL.Texture.loadWith nonPowerOfTwoOptions logoUrl
+        , Task.attempt MapLoaded <| WebGL.Texture.loadWith nonPowerOfTwoOptions mapUrl
         ]
     )
 
@@ -131,8 +132,8 @@ type Msg
     | WindowResized
     | Populate (List ( Position, Direction, Radius ))
     | CanvasClick ( Float, Float )
-    | LogoLoaded (Maybe Texture)
-    | MapLoaded (Maybe Texture)
+    | LogoLoaded (Result Error Texture)
+    | MapLoaded (Result Error Texture)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -187,11 +188,16 @@ update msg model =
         CanvasClick ( x, y ) ->
             ( model, Random.generate Populate <| Random.list 3 <| tupleGeneratorAt x y )
 
-        LogoLoaded maybeLogo ->
-            ( { model | logo = maybeLogo }, Cmd.none )
+        LogoLoaded (Ok logo) ->
+            ( { model | logo = Just logo }, Cmd.none )
 
-        MapLoaded maybeMap ->
-            ( { model | map = maybeMap }, Cmd.none )
+        LogoLoaded (Err _) ->
+            ( model, Cmd.none )
+
+        MapLoaded (Ok map) ->
+            ( { model | map = Just map }, Cmd.none )
+        MapLoaded (Err _) ->
+            ( model, Cmd.none )
 
 
 processParticles : Window -> Float -> List Particle -> List Particle
@@ -252,23 +258,20 @@ view model =
     in
     WebGL.toHtmlWith
         [ WebGL.clearColor 0.4 0.4 0.4 1
+        , WebGL.alpha False
+        , WebGL.antialias
         ]
         [ Mouse.onDown (\event -> CanvasClick <| Tuple.mapSecond invertY event.offsetPos)
         , Attrs.width <| round width
         , Attrs.height <| round height
         ]
     <|
-        (List.map (drawParticle model.window) model.particles
-            ++ drawConnections model.window model.particles
+        (drawConnections model.window model.particles
+            ++ List.map (drawParticle model.window) model.particles
         )
 
 
 
-{- ++ drawConnections model.particles
-   ++ viewMap model.window model.map
-   ++ List.map drawParticle model.particles
-   ++ drawLogo model.window model.logo
--}
 {-
    viewMap : Window -> Maybe Texture -> List Renderable
    viewMap window maybeMap =
@@ -359,12 +362,7 @@ drawConnections : Window -> List Particle -> List Entity
 drawConnections window particles =
     let
         drawConnection from to =
-            WebGL.entityWith
-                [ WebGL.Settings.Blend.add
-                    WebGL.Settings.Blend.one
-                    WebGL.Settings.Blend.zero
-                , WebGL.Settings.sampleAlphaToCoverage
-                ]
+            WebGL.entity
                 vertexShader
                 fragmentShader
                 connectionMesh
@@ -438,7 +436,7 @@ connectionUniforms window ( from, to ) =
         Mat4.makeTranslate3 (getX from) (getY from) 0
     , scale = Mat4.makeScale3 (length diff) 0.3 0
     , rotate = Mat4.makeRotate phi (vec3 0 0 1)
-    , intensity = (minDistance - length diff) / minDistance
+    , intensity = (minDistance - distance from to) / minDistance
     }
 
 
@@ -541,7 +539,7 @@ fragmentShader =
         uniform float intensity;
         
         void main () {
-            gl_FragColor =  vec4(vcolor, 0);
+            gl_FragColor =  vec4(vcolor, intensity);
         }
     |]
 
