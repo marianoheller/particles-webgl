@@ -13,6 +13,8 @@ import Math.Vector3 as Vec3 exposing (Vec3, vec3)
 import Random as Random
 import Task as Task
 import WebGL exposing (Entity, Mesh, Shader)
+import WebGL.Settings
+import WebGL.Settings.Blend
 import WebGL.Texture exposing (..)
 
 
@@ -28,6 +30,16 @@ minDistance =
 qtyParticlesMin : Int
 qtyParticlesMin =
     50
+
+
+radiusMin : Float
+radiusMin =
+    2
+
+
+radiusMax : Float
+radiusMax =
+    4
 
 
 logoUrl : String
@@ -234,14 +246,21 @@ view model =
 
         height =
             model.window.height
+
+        invertY y =
+            model.window.height - y
     in
-    WebGL.toHtml
-        [ Mouse.onDown (\event -> CanvasClick event.offsetPos)
+    WebGL.toHtmlWith
+        [ WebGL.clearColor 0.4 0.4 0.4 1
+        ]
+        [ Mouse.onDown (\event -> CanvasClick <| Tuple.mapSecond invertY event.offsetPos)
         , Attrs.width <| round width
         , Attrs.height <| round height
         ]
     <|
-        List.map (drawParticle model.window) model.particles
+        (List.map (drawParticle model.window) model.particles
+            ++ drawConnections model.window model.particles
+        )
 
 
 
@@ -324,13 +343,7 @@ view model =
 
 colorParticle : Vec3
 colorParticle =
-    -- vec3 178 178 178
-    vec3 0 0 0
-
-
-modifyAlpha : Float -> Color.Color -> Color.Color
-modifyAlpha alpha =
-    Color.fromRgba << (\r -> { r | alpha = alpha }) << Color.toRgba
+    vec3 178 178 178
 
 
 drawParticle : Window -> Particle -> Entity
@@ -339,35 +352,93 @@ drawParticle window (Particle pos _ radius) =
         vertexShader
         fragmentShader
         particleMesh
-        (uniforms window pos radius)
+        (particleUniforms window pos radius)
+
+
+drawConnections : Window -> List Particle -> List Entity
+drawConnections window particles =
+    let
+        drawConnection from to =
+            WebGL.entityWith
+                [ WebGL.Settings.Blend.add
+                    WebGL.Settings.Blend.one
+                    WebGL.Settings.Blend.zero
+                , WebGL.Settings.sampleAlphaToCoverage
+                ]
+                vertexShader
+                fragmentShader
+                connectionMesh
+                (connectionUniforms window ( from, to ))
+
+        folder (Particle pos _ _) acc =
+            acc
+                ++ (List.filter
+                        (\(Particle pos2 _ _) -> distance pos pos2 < minDistance)
+                        particles
+                        |> List.map (\(Particle pos2 _ _) -> drawConnection pos pos2)
+                   )
+    in
+    List.foldr folder
+        []
+        particles
 
 
 type alias Uniforms =
-    { perspective : Mat4
+    { projection : Mat4
     , camera : Mat4
+    , model : Mat4
+    , scale : Mat4
+    , rotate : Mat4
+    , intensity : Float
     }
 
 
-uniforms : Window -> Position -> Float -> Uniforms
-uniforms window pos radius =
-    let
-        x =
-            getX pos
-
-        y =
-            getY pos
-    in
-    { perspective =
-        Mat4.makePerspective
-            90
-            (window.width / window.height)
-            -1
-            1
+particleUniforms : Window -> Position -> Float -> Uniforms
+particleUniforms window pos radius =
+    { projection =
+        Mat4.makeOrtho2D
+            0
+            window.width
+            0
+            window.height
     , camera =
         Mat4.makeLookAt
-            (vec3 x y (100 * radius))
-            (vec3 x y 0)
+            (vec3 0 0 0.99)
+            (vec3 0 0 0)
             (vec3 0 1 0)
+    , model =
+        Mat4.makeTranslate3 (getX pos) (getY pos) 0
+    , scale = Mat4.makeScale3 radius radius 0
+    , rotate = Mat4.makeRotate 0 (vec3 0 0 1)
+    , intensity = 1
+    }
+
+
+connectionUniforms : Window -> ( Position, Position ) -> Uniforms
+connectionUniforms window ( from, to ) =
+    let
+        diff =
+            sub to from
+
+        phi =
+            atan2 (getY diff) (getX diff)
+    in
+    { projection =
+        Mat4.makeOrtho2D
+            0
+            window.width
+            0
+            window.height
+    , camera =
+        Mat4.makeLookAt
+            (vec3 0 0 0.99)
+            (vec3 0 0 0)
+            (vec3 0 1 0)
+    , model =
+        Mat4.makeTranslate3 (getX from) (getY from) 0
+    , scale = Mat4.makeScale3 (length diff) 0.3 0
+    , rotate = Mat4.makeRotate phi (vec3 0 0 1)
+    , intensity = (minDistance - length diff) / minDistance
     }
 
 
@@ -415,51 +486,47 @@ particleMesh =
         |> WebGL.triangles
 
 
+connectionMesh : Mesh Attribute
+connectionMesh =
+    let
+        vertex position =
+            Attribute (Vec3.scale (1 / 255) colorParticle) position
+    in
+    [ ( vertex (vec3 0 0 0)
+      , vertex (vec3 0 1 0)
+      , vertex (vec3 1 0 0)
+      )
+    , ( vertex (vec3 1 1 0)
+      , vertex (vec3 0 1 0)
+      , vertex (vec3 1 0 0)
+      )
+    ]
+        |> WebGL.triangles
 
-{- shapes [ fill colorParticle ]
-   [ circle ( getX pos, getY pos ) radius
-   ]
--}
-{-
-   drawConnections : List Particle -> List Renderable
-   drawConnections particles =
-       let
-           drawPath from to =
-               path ( getX from, getY from )
-                   [ lineTo ( getX to, getY to )
-                   ]
 
-           drawConnection from to =
-               shapes
-                   [ stroke <|
-                       modifyAlpha (1 - distance from to / minDistance) colorParticle
-                   , lineWidth 1
-                   ]
-                   [ drawPath from to ]
 
-           folder (Particle pos _ _) acc =
-               acc
-                   ++ (List.filter
-                           (\(Particle pos2 _ _) -> distance pos pos2 < minDistance)
-                           particles
-                           |> List.map (\(Particle pos2 _ _) -> drawConnection pos pos2)
-                      )
-       in
-       List.foldr folder [] particles
--}
 -- Shaders
 
 
 vertexShader : Shader Attribute Uniforms { vcolor : Vec3 }
 vertexShader =
     [glsl|
+        precision mediump float;
+
         attribute vec3 position;
         attribute vec3 color;
-        uniform mat4 perspective;
+
+        uniform mat4 projection;
         uniform mat4 camera;
+        uniform mat4 model;
+        uniform mat4 scale;
+        uniform mat4 rotate;
+        uniform float intensity;
+
         varying vec3 vcolor;
+
         void main () {
-            gl_Position = perspective * camera * vec4(position, 1.0);
+            gl_Position =  projection * camera * model * rotate * scale * vec4(position, 1.0);
             vcolor = color;
         }
     |]
@@ -469,9 +536,12 @@ fragmentShader : Shader {} Uniforms { vcolor : Vec3 }
 fragmentShader =
     [glsl|
         precision mediump float;
+
         varying vec3 vcolor;
+        uniform float intensity;
+        
         void main () {
-            gl_FragColor = vec4(vcolor, 1.0);
+            gl_FragColor =  vec4(vcolor, 0);
         }
     |]
 
@@ -499,7 +569,7 @@ vec2FromTuple ( x, y ) =
 
 genRadius : Random.Generator Radius
 genRadius =
-    Random.float 1 3
+    Random.float radiusMin radiusMax
 
 
 tupleInitGenerator : Float -> Float -> Random.Generator ( Position, Direction, Radius )

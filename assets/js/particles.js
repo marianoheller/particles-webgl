@@ -7062,7 +7062,9 @@ var $elm$random$Random$float = F2(
 					$elm$random$Random$next(seed1));
 			});
 	});
-var $author$project$Main$genRadius = A2($elm$random$Random$float, 1, 3);
+var $author$project$Main$radiusMax = 4;
+var $author$project$Main$radiusMin = 2;
+var $author$project$Main$genRadius = A2($elm$random$Random$float, $author$project$Main$radiusMin, $author$project$Main$radiusMax);
 var $elm$random$Random$map2 = F3(
 	function (func, _v0, _v1) {
 		var genA = _v0.a;
@@ -8006,18 +8008,154 @@ var $author$project$Main$update = F2(
 var $author$project$Main$CanvasClick = function (a) {
 	return {$: 'CanvasClick', a: a};
 };
-var $elm_explorations$webgl$WebGL$Internal$DepthTest = F4(
+var $elm_explorations$webgl$WebGL$Internal$ClearColor = F4(
 	function (a, b, c, d) {
-		return {$: 'DepthTest', a: a, b: b, c: c, d: d};
+		return {$: 'ClearColor', a: a, b: b, c: c, d: d};
 	});
-var $elm_explorations$webgl$WebGL$Settings$DepthTest$less = function (_v0) {
-	var write = _v0.write;
-	var near = _v0.near;
-	var far = _v0.far;
-	return A4($elm_explorations$webgl$WebGL$Internal$DepthTest, 513, write, near, far);
+var $elm_explorations$webgl$WebGL$clearColor = $elm_explorations$webgl$WebGL$Internal$ClearColor;
+var $elm_explorations$webgl$WebGL$Internal$Blend = function (a) {
+	return function (b) {
+		return function (c) {
+			return function (d) {
+				return function (e) {
+					return function (f) {
+						return function (g) {
+							return function (h) {
+								return function (i) {
+									return function (j) {
+										return {$: 'Blend', a: a, b: b, c: c, d: d, e: e, f: f, g: g, h: h, i: i, j: j};
+									};
+								};
+							};
+						};
+					};
+				};
+			};
+		};
+	};
 };
-var $elm_explorations$webgl$WebGL$Settings$DepthTest$default = $elm_explorations$webgl$WebGL$Settings$DepthTest$less(
-	{far: 1, near: 0, write: true});
+var $elm_explorations$webgl$WebGL$Settings$Blend$custom = function (_v0) {
+	var r = _v0.r;
+	var g = _v0.g;
+	var b = _v0.b;
+	var a = _v0.a;
+	var color = _v0.color;
+	var alpha = _v0.alpha;
+	var expand = F2(
+		function (_v1, _v2) {
+			var eq1 = _v1.a;
+			var f11 = _v1.b;
+			var f12 = _v1.c;
+			var eq2 = _v2.a;
+			var f21 = _v2.b;
+			var f22 = _v2.c;
+			return $elm_explorations$webgl$WebGL$Internal$Blend(eq1)(f11)(f12)(eq2)(f21)(f22)(r)(g)(b)(a);
+		});
+	return A2(expand, color, alpha);
+};
+var $elm_explorations$webgl$WebGL$Settings$Blend$Blender = F3(
+	function (a, b, c) {
+		return {$: 'Blender', a: a, b: b, c: c};
+	});
+var $elm_explorations$webgl$WebGL$Settings$Blend$customAdd = F2(
+	function (_v0, _v1) {
+		var factor1 = _v0.a;
+		var factor2 = _v1.a;
+		return A3($elm_explorations$webgl$WebGL$Settings$Blend$Blender, 32774, factor1, factor2);
+	});
+var $elm_explorations$webgl$WebGL$Settings$Blend$add = F2(
+	function (factor1, factor2) {
+		return $elm_explorations$webgl$WebGL$Settings$Blend$custom(
+			{
+				a: 0,
+				alpha: A2($elm_explorations$webgl$WebGL$Settings$Blend$customAdd, factor1, factor2),
+				b: 0,
+				color: A2($elm_explorations$webgl$WebGL$Settings$Blend$customAdd, factor1, factor2),
+				g: 0,
+				r: 0
+			});
+	});
+var $author$project$Main$Attribute = F2(
+	function (color, position) {
+		return {color: color, position: position};
+	});
+var $elm_explorations$linear_algebra$Math$Vector3$vec3 = _MJS_v3;
+var $author$project$Main$colorParticle = A3($elm_explorations$linear_algebra$Math$Vector3$vec3, 178, 178, 178);
+var $elm_explorations$linear_algebra$Math$Vector3$scale = _MJS_v3scale;
+var $elm_explorations$webgl$WebGL$Mesh3 = F2(
+	function (a, b) {
+		return {$: 'Mesh3', a: a, b: b};
+	});
+var $elm_explorations$webgl$WebGL$triangles = $elm_explorations$webgl$WebGL$Mesh3(
+	{elemSize: 3, indexSize: 0, mode: 4});
+var $author$project$Main$connectionMesh = function () {
+	var vertex = function (position) {
+		return A2(
+			$author$project$Main$Attribute,
+			A2($elm_explorations$linear_algebra$Math$Vector3$scale, 1 / 255, $author$project$Main$colorParticle),
+			position);
+	};
+	return $elm_explorations$webgl$WebGL$triangles(
+		_List_fromArray(
+			[
+				_Utils_Tuple3(
+				vertex(
+					A3($elm_explorations$linear_algebra$Math$Vector3$vec3, 0, 0, 0)),
+				vertex(
+					A3($elm_explorations$linear_algebra$Math$Vector3$vec3, 0, 1, 0)),
+				vertex(
+					A3($elm_explorations$linear_algebra$Math$Vector3$vec3, 1, 0, 0))),
+				_Utils_Tuple3(
+				vertex(
+					A3($elm_explorations$linear_algebra$Math$Vector3$vec3, 1, 1, 0)),
+				vertex(
+					A3($elm_explorations$linear_algebra$Math$Vector3$vec3, 0, 1, 0)),
+				vertex(
+					A3($elm_explorations$linear_algebra$Math$Vector3$vec3, 1, 0, 0)))
+			]));
+}();
+var $elm$core$Basics$atan2 = _Basics_atan2;
+var $elm_explorations$linear_algebra$Math$Vector2$length = _MJS_v2length;
+var $elm_explorations$linear_algebra$Math$Matrix4$makeLookAt = _MJS_m4x4makeLookAt;
+var $elm_explorations$linear_algebra$Math$Matrix4$makeOrtho2D = _MJS_m4x4makeOrtho2D;
+var $elm_explorations$linear_algebra$Math$Matrix4$makeRotate = _MJS_m4x4makeRotate;
+var $elm_explorations$linear_algebra$Math$Matrix4$makeScale3 = _MJS_m4x4makeScale3;
+var $elm_explorations$linear_algebra$Math$Matrix4$makeTranslate3 = _MJS_m4x4makeTranslate3;
+var $elm_explorations$linear_algebra$Math$Vector2$sub = _MJS_v2sub;
+var $author$project$Main$connectionUniforms = F2(
+	function (window, _v0) {
+		var from = _v0.a;
+		var to = _v0.b;
+		var diff = A2($elm_explorations$linear_algebra$Math$Vector2$sub, to, from);
+		var phi = A2(
+			$elm$core$Basics$atan2,
+			$elm_explorations$linear_algebra$Math$Vector2$getY(diff),
+			$elm_explorations$linear_algebra$Math$Vector2$getX(diff));
+		return {
+			camera: A3(
+				$elm_explorations$linear_algebra$Math$Matrix4$makeLookAt,
+				A3($elm_explorations$linear_algebra$Math$Vector3$vec3, 0, 0, 0.99),
+				A3($elm_explorations$linear_algebra$Math$Vector3$vec3, 0, 0, 0),
+				A3($elm_explorations$linear_algebra$Math$Vector3$vec3, 0, 1, 0)),
+			intensity: ($author$project$Main$minDistance - $elm_explorations$linear_algebra$Math$Vector2$length(diff)) / $author$project$Main$minDistance,
+			model: A3(
+				$elm_explorations$linear_algebra$Math$Matrix4$makeTranslate3,
+				$elm_explorations$linear_algebra$Math$Vector2$getX(from),
+				$elm_explorations$linear_algebra$Math$Vector2$getY(from),
+				0),
+			projection: A4($elm_explorations$linear_algebra$Math$Matrix4$makeOrtho2D, 0, window.width, 0, window.height),
+			rotate: A2(
+				$elm_explorations$linear_algebra$Math$Matrix4$makeRotate,
+				phi,
+				A3($elm_explorations$linear_algebra$Math$Vector3$vec3, 0, 0, 1)),
+			scale: A3(
+				$elm_explorations$linear_algebra$Math$Matrix4$makeScale3,
+				$elm_explorations$linear_algebra$Math$Vector2$length(diff),
+				0.3,
+				0)
+		};
+	});
+var $elm_explorations$linear_algebra$Math$Vector2$distance = _MJS_v2distance;
 var $elm_explorations$webgl$WebGL$Internal$disableSetting = F2(
 	function (cache, setting) {
 		switch (setting.$) {
@@ -8082,32 +8220,84 @@ var $elm_explorations$webgl$WebGL$Internal$enableSetting = F2(
 		}
 	});
 var $elm_explorations$webgl$WebGL$entityWith = _WebGL_entity;
+var $author$project$Main$fragmentShader = {
+	src: '\n        precision mediump float;\n\n        varying vec3 vcolor;\n        uniform float intensity;\n        \n        void main () {\n            gl_FragColor =  vec4(vcolor, 0);\n        }\n    ',
+	attributes: {},
+	uniforms: {intensity: 'intensity'}
+};
+var $elm_explorations$webgl$WebGL$Settings$Blend$Factor = function (a) {
+	return {$: 'Factor', a: a};
+};
+var $elm_explorations$webgl$WebGL$Settings$Blend$one = $elm_explorations$webgl$WebGL$Settings$Blend$Factor(1);
+var $elm_explorations$webgl$WebGL$Internal$SampleAlphaToCoverage = {$: 'SampleAlphaToCoverage'};
+var $elm_explorations$webgl$WebGL$Settings$sampleAlphaToCoverage = $elm_explorations$webgl$WebGL$Internal$SampleAlphaToCoverage;
+var $author$project$Main$vertexShader = {
+	src: '\n        precision mediump float;\n\n        attribute vec3 position;\n        attribute vec3 color;\n\n        uniform mat4 projection;\n        uniform mat4 camera;\n        uniform mat4 model;\n        uniform mat4 scale;\n        uniform mat4 rotate;\n        uniform float intensity;\n\n        varying vec3 vcolor;\n\n        void main () {\n            gl_Position =  projection * camera * model * rotate * scale * vec4(position, 1.0);\n            vcolor = color;\n        }\n    ',
+	attributes: {color: 'color', position: 'position'},
+	uniforms: {camera: 'camera', intensity: 'intensity', model: 'model', projection: 'projection', rotate: 'rotate', scale: 'scale'}
+};
+var $elm_explorations$webgl$WebGL$Settings$Blend$zero = $elm_explorations$webgl$WebGL$Settings$Blend$Factor(0);
+var $author$project$Main$drawConnections = F2(
+	function (window, particles) {
+		var drawConnection = F2(
+			function (from, to) {
+				return A5(
+					$elm_explorations$webgl$WebGL$entityWith,
+					_List_fromArray(
+						[
+							A2($elm_explorations$webgl$WebGL$Settings$Blend$add, $elm_explorations$webgl$WebGL$Settings$Blend$one, $elm_explorations$webgl$WebGL$Settings$Blend$zero),
+							$elm_explorations$webgl$WebGL$Settings$sampleAlphaToCoverage
+						]),
+					$author$project$Main$vertexShader,
+					$author$project$Main$fragmentShader,
+					$author$project$Main$connectionMesh,
+					A2(
+						$author$project$Main$connectionUniforms,
+						window,
+						_Utils_Tuple2(from, to)));
+			});
+		var folder = F2(
+			function (_v2, acc) {
+				var pos = _v2.a;
+				return _Utils_ap(
+					acc,
+					A2(
+						$elm$core$List$map,
+						function (_v1) {
+							var pos2 = _v1.a;
+							return A2(drawConnection, pos, pos2);
+						},
+						A2(
+							$elm$core$List$filter,
+							function (_v0) {
+								var pos2 = _v0.a;
+								return _Utils_cmp(
+									A2($elm_explorations$linear_algebra$Math$Vector2$distance, pos, pos2),
+									$author$project$Main$minDistance) < 0;
+							},
+							particles)));
+			});
+		return A3($elm$core$List$foldr, folder, _List_Nil, particles);
+	});
+var $elm_explorations$webgl$WebGL$Internal$DepthTest = F4(
+	function (a, b, c, d) {
+		return {$: 'DepthTest', a: a, b: b, c: c, d: d};
+	});
+var $elm_explorations$webgl$WebGL$Settings$DepthTest$less = function (_v0) {
+	var write = _v0.write;
+	var near = _v0.near;
+	var far = _v0.far;
+	return A4($elm_explorations$webgl$WebGL$Internal$DepthTest, 513, write, near, far);
+};
+var $elm_explorations$webgl$WebGL$Settings$DepthTest$default = $elm_explorations$webgl$WebGL$Settings$DepthTest$less(
+	{far: 1, near: 0, write: true});
 var $elm_explorations$webgl$WebGL$entity = $elm_explorations$webgl$WebGL$entityWith(
 	_List_fromArray(
 		[$elm_explorations$webgl$WebGL$Settings$DepthTest$default]));
-var $author$project$Main$fragmentShader = {
-	src: '\n        precision mediump float;\n        varying vec3 vcolor;\n        void main () {\n            gl_FragColor = vec4(vcolor, 1.0);\n        }\n    ',
-	attributes: {},
-	uniforms: {}
-};
-var $author$project$Main$Attribute = F2(
-	function (color, position) {
-		return {color: color, position: position};
-	});
-var $elm_explorations$linear_algebra$Math$Vector3$vec3 = _MJS_v3;
-var $author$project$Main$colorParticle = A3($elm_explorations$linear_algebra$Math$Vector3$vec3, 0, 0, 0);
 var $elm$core$Basics$cos = _Basics_cos;
-var $elm_explorations$linear_algebra$Math$Matrix4$makeRotate = _MJS_m4x4makeRotate;
 var $elm$core$Basics$pi = _Basics_pi;
-var $elm_explorations$linear_algebra$Math$Vector3$scale = _MJS_v3scale;
 var $elm$core$Basics$sin = _Basics_sin;
 var $elm_explorations$linear_algebra$Math$Matrix4$transform = _MJS_v3mul4x4;
-var $elm_explorations$webgl$WebGL$Mesh3 = F2(
-	function (a, b) {
-		return {$: 'Mesh3', a: a, b: b};
-	});
-var $elm_explorations$webgl$WebGL$triangles = $elm_explorations$webgl$WebGL$Mesh3(
-	{elemSize: 3, indexSize: 0, mode: 4});
 var $author$project$Main$particleMesh = function () {
 	var vertex = function (position) {
 		return A2(
@@ -8150,26 +8340,28 @@ var $author$project$Main$particleMesh = function () {
 	return $elm_explorations$webgl$WebGL$triangles(
 		go(qtyTriangles));
 }();
-var $elm_explorations$linear_algebra$Math$Matrix4$makeLookAt = _MJS_m4x4makeLookAt;
-var $elm_explorations$linear_algebra$Math$Matrix4$makePerspective = _MJS_m4x4makePerspective;
-var $author$project$Main$uniforms = F3(
+var $author$project$Main$particleUniforms = F3(
 	function (window, pos, radius) {
-		var y = $elm_explorations$linear_algebra$Math$Vector2$getY(pos);
-		var x = $elm_explorations$linear_algebra$Math$Vector2$getX(pos);
 		return {
 			camera: A3(
 				$elm_explorations$linear_algebra$Math$Matrix4$makeLookAt,
-				A3($elm_explorations$linear_algebra$Math$Vector3$vec3, x, y, 100 * radius),
-				A3($elm_explorations$linear_algebra$Math$Vector3$vec3, x, y, 0),
+				A3($elm_explorations$linear_algebra$Math$Vector3$vec3, 0, 0, 0.99),
+				A3($elm_explorations$linear_algebra$Math$Vector3$vec3, 0, 0, 0),
 				A3($elm_explorations$linear_algebra$Math$Vector3$vec3, 0, 1, 0)),
-			perspective: A4($elm_explorations$linear_algebra$Math$Matrix4$makePerspective, 90, window.width / window.height, -1, 1)
+			intensity: 1,
+			model: A3(
+				$elm_explorations$linear_algebra$Math$Matrix4$makeTranslate3,
+				$elm_explorations$linear_algebra$Math$Vector2$getX(pos),
+				$elm_explorations$linear_algebra$Math$Vector2$getY(pos),
+				0),
+			projection: A4($elm_explorations$linear_algebra$Math$Matrix4$makeOrtho2D, 0, window.width, 0, window.height),
+			rotate: A2(
+				$elm_explorations$linear_algebra$Math$Matrix4$makeRotate,
+				0,
+				A3($elm_explorations$linear_algebra$Math$Vector3$vec3, 0, 0, 1)),
+			scale: A3($elm_explorations$linear_algebra$Math$Matrix4$makeScale3, radius, radius, 0)
 		};
 	});
-var $author$project$Main$vertexShader = {
-	src: '\n        attribute vec3 position;\n        attribute vec3 color;\n        uniform mat4 perspective;\n        uniform mat4 camera;\n        varying vec3 vcolor;\n        void main () {\n            gl_Position = perspective * camera * vec4(position, 1.0);\n            vcolor = color;\n        }\n    ',
-	attributes: {color: 'color', position: 'position'},
-	uniforms: {camera: 'camera', perspective: 'perspective'}
-};
 var $author$project$Main$drawParticle = F2(
 	function (window, _v0) {
 		var pos = _v0.a;
@@ -8179,7 +8371,7 @@ var $author$project$Main$drawParticle = F2(
 			$author$project$Main$vertexShader,
 			$author$project$Main$fragmentShader,
 			$author$project$Main$particleMesh,
-			A3($author$project$Main$uniforms, window, pos, radius));
+			A3($author$project$Main$particleUniforms, window, pos, radius));
 	});
 var $elm$html$Html$Attributes$height = function (n) {
 	return A2(
@@ -8187,6 +8379,14 @@ var $elm$html$Html$Attributes$height = function (n) {
 		'height',
 		$elm$core$String$fromInt(n));
 };
+var $elm$core$Tuple$mapSecond = F2(
+	function (func, _v0) {
+		var x = _v0.a;
+		var y = _v0.b;
+		return _Utils_Tuple2(
+			x,
+			func(y));
+	});
 var $mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$defaultOptions = {preventDefault: true, stopPropagation: false};
 var $elm$virtual_dom$VirtualDom$Custom = function (a) {
 	return {$: 'Custom', a: a};
@@ -8293,27 +8493,10 @@ var $mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$onWithOptions = F3(
 	});
 var $mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$onDown = A2($mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$onWithOptions, 'mousedown', $mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$defaultOptions);
 var $elm$core$Basics$round = _Basics_round;
-var $elm_explorations$webgl$WebGL$Internal$Alpha = function (a) {
-	return {$: 'Alpha', a: a};
-};
-var $elm_explorations$webgl$WebGL$alpha = $elm_explorations$webgl$WebGL$Internal$Alpha;
-var $elm_explorations$webgl$WebGL$Internal$Antialias = {$: 'Antialias'};
-var $elm_explorations$webgl$WebGL$antialias = $elm_explorations$webgl$WebGL$Internal$Antialias;
-var $elm_explorations$webgl$WebGL$Internal$Depth = function (a) {
-	return {$: 'Depth', a: a};
-};
-var $elm_explorations$webgl$WebGL$depth = $elm_explorations$webgl$WebGL$Internal$Depth;
 var $elm_explorations$webgl$WebGL$toHtmlWith = F3(
 	function (options, attributes, entities) {
 		return A3(_WebGL_toHtml, options, attributes, entities);
 	});
-var $elm_explorations$webgl$WebGL$toHtml = $elm_explorations$webgl$WebGL$toHtmlWith(
-	_List_fromArray(
-		[
-			$elm_explorations$webgl$WebGL$alpha(true),
-			$elm_explorations$webgl$WebGL$antialias,
-			$elm_explorations$webgl$WebGL$depth(1)
-		]));
 var $elm$html$Html$Attributes$width = function (n) {
 	return A2(
 		_VirtualDom_attribute,
@@ -8322,24 +8505,34 @@ var $elm$html$Html$Attributes$width = function (n) {
 };
 var $author$project$Main$view = function (model) {
 	var width = model.window.width;
+	var invertY = function (y) {
+		return model.window.height - y;
+	};
 	var height = model.window.height;
-	return A2(
-		$elm_explorations$webgl$WebGL$toHtml,
+	return A3(
+		$elm_explorations$webgl$WebGL$toHtmlWith,
+		_List_fromArray(
+			[
+				A4($elm_explorations$webgl$WebGL$clearColor, 0.4, 0.4, 0.4, 1)
+			]),
 		_List_fromArray(
 			[
 				$mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$onDown(
 				function (event) {
-					return $author$project$Main$CanvasClick(event.offsetPos);
+					return $author$project$Main$CanvasClick(
+						A2($elm$core$Tuple$mapSecond, invertY, event.offsetPos));
 				}),
 				$elm$html$Html$Attributes$width(
 				$elm$core$Basics$round(width)),
 				$elm$html$Html$Attributes$height(
 				$elm$core$Basics$round(height))
 			]),
-		A2(
-			$elm$core$List$map,
-			$author$project$Main$drawParticle(model.window),
-			model.particles));
+		_Utils_ap(
+			A2(
+				$elm$core$List$map,
+				$author$project$Main$drawParticle(model.window),
+				model.particles),
+			A2($author$project$Main$drawConnections, model.window, model.particles)));
 };
 var $author$project$Main$main = $elm$browser$Browser$element(
 	{init: $author$project$Main$init, subscriptions: $author$project$Main$subscriptions, update: $author$project$Main$update, view: $author$project$Main$view});
